@@ -119,14 +119,12 @@ public class ServiceVerticle extends AbstractVerticle {
 	public Future<Void> createCluster() {
 		Future<Void> startFuture = Future.future();
 
-		vertx.executeBlocking(future -> {
-			VertxOptions options = null;
-			ClusterManager mgr = null;
+		vertx.<HazelcastInstance>executeBlocking(future -> {
 
 			if (System.getenv("SWARM") != null) {
 
-				Config conf = new ClasspathXmlConfig("hazelcast-genny.xml");
-				System.out.println("Starting hazelcast DISCOVERY!!!!!");
+				Config conf = new ClasspathXmlConfig("bridge.xml");
+				System.out.println("Starting hazelcast Scoring DISCOVERY!!!!!");
 				NodeContext nodeContext = new DefaultNodeContext() {
 					@Override
 					public AddressPicker createAddressPicker(Node node) {
@@ -134,40 +132,48 @@ public class ServiceVerticle extends AbstractVerticle {
 					}
 				};
 
-				HazelcastInstance hazelcastInstance = HazelcastInstanceFactory.newHazelcastInstance(conf,
-						"hazelcast-genny", nodeContext);
+				HazelcastInstance hazelcastInstance = HazelcastInstanceFactory.newHazelcastInstance(conf, "bridge",
+						nodeContext);
 				System.out.println("Done hazelcast DISCOVERY");
-
-				mgr = new HazelcastClusterManager(hazelcastInstance);
+				future.complete(hazelcastInstance);
 			} else {
-				mgr = new HazelcastClusterManager();
-				options = new VertxOptions().setClusterManager(mgr);
-
-				if (System.getenv("GENNYDEV") == null) {
-					System.out.println("setClusterHost etc");
-					options.setClusterHost("scoring").setClusterPublicHost("scoring").setClusterPort(15701);
-				} else {
-					logger.info("Running DEV mode, no cluster");
-					options.setBlockedThreadCheckInterval(200000000);
-					options.setMaxEventLoopExecuteTime(Long.MAX_VALUE);
-
-				}
+				future.complete(null);
 			}
-
-			System.out.println("Starting Clustered Vertx");
-			Vertx.clusteredVertx(options, res -> {
-				if (res.succeeded()) {
-					eventBus = res.result().eventBus();
-					// handler.setEventBus(eventBus);
-					System.out.println("Scoring Cluster Started!");
-					startFuture.complete();
-				} else {
-					// failed!
-				}
-			});
 		}, res -> {
 			if (res.succeeded()) {
+				System.out.println("RESULT SUCCEEDED");
+				HazelcastInstance hazelcastInstance = (HazelcastInstance) res.result();
+				ClusterManager mgr = null;
+				if (hazelcastInstance != null) {
+					mgr = new HazelcastClusterManager(hazelcastInstance);
+				} else {
+					mgr = new HazelcastClusterManager(); // standard docker
+				}
+				System.out.println("Starting Clustered Vertx");
+				VertxOptions options = new VertxOptions().setClusterManager(mgr);
 
+				if (System.getenv("SWARM") == null) {
+					if (System.getenv("GENNYDEV") == null) {
+						System.out.println("setClusterHost etc");
+						options.setClusterHost("scoring").setClusterPublicHost("scoring").setClusterPort(15701);
+					} else {
+						logger.info("Running DEV mode, no cluster");
+						options.setBlockedThreadCheckInterval(200000000);
+						options.setMaxEventLoopExecuteTime(Long.MAX_VALUE);
+					}
+
+				}
+
+				Vertx.clusteredVertx(options, res2 -> {
+					if (res2.succeeded()) {
+						eventBus = res2.result().eventBus();
+						// handler.setEventBus(eventBus);
+						System.out.println("Scoring Cluster Started!");
+						startFuture.complete();
+					} else {
+						// failed!
+					}
+				});
 			}
 		});
 
