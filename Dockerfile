@@ -4,7 +4,7 @@ RUN apk update && apk add jq
 ADD target/scoring-0.0.1-SNAPSHOT-fat.jar /service.jar
 ADD cluster.xml /cluster.xml
 
-ADD realm /realm
+ADD realm /opt/realm
 ADD docker-entrypoint.sh /docker-entrypoint.sh
 
 WORKDIR /
