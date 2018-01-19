@@ -153,7 +153,7 @@ public class ServiceVerticle extends AbstractVerticle {
 				VertxOptions options = new VertxOptions().setClusterManager(mgr);
 
 				if (System.getenv("SWARM") == null) {
-					if (System.getenv("GENNYDEV") == null) {
+					if (System.getenv("GENNY_DEV") == null) {
 						System.out.println("setClusterHost etc");
 						options.setClusterHost("scoring").setClusterPublicHost("scoring").setClusterPort(15701);
 					} else {

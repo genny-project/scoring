@@ -5,9 +5,17 @@
 	<artifactId>scoring</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>scoring</name>
+	
+	    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <distribution>repo</distribution>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+        </license>
+    </licenses>
 	<properties>
 		<log4j-core-version>2.5</log4j-core-version>
-		<qwanda.version>0.5.2</qwanda.version>
+		<qwanda.version>0.5.5</qwanda.version>
 
 	</properties>
 	<dependencies>
@@ -89,7 +97,7 @@
 	<repositories>
 		<repository>
 			<id>life.genny</id>
-			<url>https://nexus.outcome-hub.com/nexus/content/repositories/life.genny</url>
+			<url>http://nexus.outcome-hub.com/nexus/content/repositories/life.genny</url>
 		</repository>
 		<repository>
 			<snapshots>
